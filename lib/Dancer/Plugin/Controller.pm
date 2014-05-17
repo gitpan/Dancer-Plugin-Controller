@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -16,7 +16,12 @@ Dancer::Plugin::Controller - interface between a model and view
 	use Dancer::Plugin::Controller;
 
 	get '/' => sub { 
-		controller(action => 'Index', template => 'index');
+		controller(
+			action       => 'Index', 
+			template     => 'index',
+			layout       => 'page_custom_layout', #
+			redirect_404 => '404.html'            # redirect to if action method return undef
+		);
 	};
 
 
@@ -37,8 +42,6 @@ Dancer::Plugin::Controller - interface between a model and view
 		"Controller":
 			# this is prefiix for module with implementation of action
 			action_prefix: 'MyActionPrefix' # default: 'Action'
-			# if you have problems with utf8, you may try use this option
-			force_utf8: 1 # default: 0
 
 =cut
 
@@ -51,28 +54,16 @@ use Dancer ':syntax';
 use Dancer::Plugin;
 
 
-sub _template {
-	my ($force_utf8, @params) = @_;
-
-	if ($force_utf8) {
-		my $content = Dancer::template(@params);
-		utf8::decode($content);
-		return $content;
-	}
-	else {
-		return Dancer::template(@params);
-	}
-}
-
 register controller => sub {
 	my ($self, %params) = plugin_args(@_);
 
 	my $template_name = $params{template} || '';
-	my $action_name = $params{action} || '';
+	my $custom_layout = $params{layout} || '';
+	my $action_name   = $params{action} || '';
+	my $redirect_404  = $params{redirect_404} || '';
 	
 	my $conf = plugin_setting();
 	my $action_prefix = $conf->{action_prefix} || 'Action';
-	my $force_utf8 = $conf->{force_utf8} || 0;
 
 	my $action_class = sprintf('%s::%s::%s', Dancer::config->{appname}, $action_prefix, $action_name);
 	my $action_params = {
@@ -80,19 +71,21 @@ register controller => sub {
 		%{Dancer::vars()}
 	};
 
-	# Если задан шаблон - возращаем результат рендера
-	# Если шаблона не задан - возвращаем реультат экшена
-	if ($template_name) {
-		return _template( 
-			$force_utf8,
-			$template_name,
-			$action_name
-				? $action_class->main($action_params)
-				: {}
-		);
+	my $action_result = $action_name ? $action_class->main($action_params) : {};
+
+	if (not defined $action_result and $redirect_404) {
+		return redirect $redirect_404;
 	}
 	else {
-		return $action_class->main($action_params);
+		# Если задан шаблон - возращаем результат рендера
+		# Если шаблона не задан - возвращаем реультат экшена
+		if ($template_name) {
+			set layout => $custom_layout || $conf->{layout};
+			return Dancer::template($template_name, $action_result);
+		}
+		else {
+			return $action_result;
+		}
 	}
 };
 
