@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -17,9 +17,9 @@ Dancer::Plugin::Controller - interface between a model and view
 
 	get '/' => sub { 
 		controller(
-			action       => 'Index', 
-			template     => 'index',
-			layout       => 'page_custom_layout', #
+			action       => 'Index',              # lib/<config:action_prefix>/Index.pm
+			template     => 'index',              # views/index.[tt|tpl|...]
+			layout       => 'page_custom_layout', # if you need other than default layout
 			redirect_404 => '404.html'            # redirect to if action method return undef
 		);
 	};
@@ -77,10 +77,8 @@ register controller => sub {
 		return redirect $redirect_404;
 	}
 	else {
-		# Если задан шаблон - возращаем результат рендера
-		# Если шаблона не задан - возвращаем реультат экшена
 		if ($template_name) {
-			set layout => $custom_layout || $conf->{layout};
+			set layout => $custom_layout || Dancer::config->{layout};
 			return Dancer::template($template_name, $action_result);
 		}
 		else {
