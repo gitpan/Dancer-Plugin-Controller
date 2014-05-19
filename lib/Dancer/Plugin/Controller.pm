@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 NAME
 
@@ -78,8 +78,11 @@ register controller => sub {
 	}
 	else {
 		if ($template_name) {
-			set layout => $custom_layout || Dancer::config->{layout};
-			return Dancer::template($template_name, $action_result);
+			return Dancer::template(
+				$template_name, 
+				$action_result, 
+				{ layout => $custom_layout || Dancer::config->{layout} }
+			);
 		}
 		else {
 			return $action_result;
