@@ -10,5 +10,6 @@ WriteMakefile(
     ABSTRACT     => 'MVC-like',
     PREREQ_PM    => {
                      'Test::Simple' => 0.44,
+                     'Dancer' => 0,
                     },
 );
