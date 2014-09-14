@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.05';
+our $VERSION = '0.15';
 
 =head1 NAME
 
@@ -13,7 +13,10 @@ Dancer::Plugin::Controller - interface between a model and view
 	# YourApp.pm
 
 	use Dancer ':syntax';
-	use Dancer::Plugin::Controller;
+	use Dancer::Plugin::Controller '0.15';
+
+	use YouApp::Action::Index;
+
 
 	get '/' => sub { 
 		controller(
@@ -28,7 +31,9 @@ Dancer::Plugin::Controller - interface between a model and view
 	# YourApp::Action::Index.pm
 	
 	sub main {
-		my ($class, $params) = @_; # $params - contains Dancer::params() and Dancer::vars()
+		my ($self) = @_;
+		
+		my $params = $self->params; # $params - contains Dancer::params() and Dancer::vars()
 
 		...
 
@@ -65,13 +70,23 @@ register controller => sub {
 	my $conf = plugin_setting();
 	my $action_prefix = $conf->{action_prefix} || 'Action';
 
-	my $action_class = sprintf('%s::%s::%s', Dancer::config->{appname}, $action_prefix, $action_name);
-	my $action_params = {
+	my $action_base_class = sprintf('%s::%s', Dancer::config->{appname}, $action_prefix);
+	my $action_class      = sprintf('%s::%s', $action_base_class, $action_name);
+	my $action_params     = {
 		Dancer::params(),
 		%{Dancer::vars()}
 	};
+	
+	my $action_result = {};
+	if ($action_name) {
+		no strict 'refs';
+		*{$action_class. '::ISA'}    = ($action_base_class);
+		*{$action_class. '::params'} = sub { $_[0]->{params} };
+		use strict 'refs';
 
-	my $action_result = $action_name ? $action_class->main($action_params) : {};
+		my $action_obj = bless { params => $action_params }, $action_class;
+		$action_result = $action_obj->main; 
+	}
 
 	if (not defined $action_result and $redirect_404) {
 		return redirect $redirect_404;
