@@ -2,13 +2,17 @@
 
 # t/002_action.t - check action run
 
+use strict;
+use warnings;
+
 use Test::More 'no_plan';
 
 use FindBin;
 use lib $FindBin::Bin. '/lib';
 
 use TestApp;
-use Dancer::Test;
+use Dancer::Test appdir => $FindBin::Bin;
+
 
 response_status_is  [GET => '/'], 200    , "GET / status is 200";
 response_content_is [GET => '/'], 'Hello', "GET / content";
