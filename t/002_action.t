@@ -22,3 +22,6 @@ response_redirect_location_is [GET => '/404_redirect_test'], 'http://localhost/4
 
 response_status_is  [GET => '/inherit'], 200      , "GET /inherit status is 200";
 response_content_is [GET => '/inherit'], 'x_value', "GET /inherit content";
+
+response_status_is  [GET => '/custom_action_method'], 200            , "GET /custom_action_method status is 200";
+response_content_is [GET => '/custom_action_method'], 'custom_method', "GET /custom_action_method content";

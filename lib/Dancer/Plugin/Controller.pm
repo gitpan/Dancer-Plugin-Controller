@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.151';
+our $VERSION = '0.152';
 
 =head1 NAME
 
@@ -80,7 +80,7 @@ register controller => sub {
 	my $action_result = {};
 	if ($action_name) {
 		no strict 'refs';
-		*{$action_class. '::ISA'}    = ($action_base_class);
+		push @{$action_class. '::ISA'}, $action_base_class;
 		*{$action_class. '::params'} = sub { $_[0]->{params} };
 		use strict 'refs';
 
