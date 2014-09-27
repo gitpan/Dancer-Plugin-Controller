@@ -1,6 +1,6 @@
 package Dancer::Plugin::Controller;
 
-our $VERSION = '0.152';
+our $VERSION = '0.153';
 
 =head1 NAME
 

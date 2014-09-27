@@ -1,6 +1,6 @@
 
 
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.64;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
@@ -12,4 +12,7 @@ WriteMakefile(
                      'Test::Simple' => 0.44,
                      'Dancer' => 0,
                     },
+    TEST_REQUIRES => {
+                      'Dancer::Template::HtmlTemplate' => 0,
+                     },
 );
